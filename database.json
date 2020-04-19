@@ -1,0 +1,54 @@
+{
+  "0": {
+    "action_name": "I am in 'letgo' application with user",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.device.touchDip(210.48, 708.57, 0)",
+      "1": "self.vc.findViewWithContentDescriptionOrRaise(u'''letgo''').touch()"
+    }
+  },
+  "1": {
+    "action_name": "I click 'Chat'",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Chat''').touch()"
+    }
+  },
+  "2": {
+    "action_name": "I click 'My listings', 'Feed' and 'Chat'",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''My listings''').touch()",
+      "1": "self.vc.findViewWithContentDescriptionOrRaise(u'''Feed''').touch()",
+      "2": "self.vc.findViewWithContentDescriptionOrRaise(u'''Chat''').touch()"
+    }
+  },
+  "3": {
+    "action_name": "qweqwe",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Feed''').touch()",
+      "1": "self.vc.findViewWithContentDescriptionOrRaise(u'''d18fdf4c-eeb7-47c7-97ec-d0fc16002e40 cat.8''').touch()",
+      "2": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/ivClose\").touch()",
+      "3": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/ivToolbarClose\").touch()",
+      "4": "self.vc.findViewWithContentDescriptionOrRaise(u'''f09143b5-76bb-415d-a4dd-e44019b4da5f cat.2''').touch()",
+      "5": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/ivToolbarClose\").touch()"
+    }
+  },
+  "4": {
+    "action_name": "clicked a photo and exited it",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''307ccb8c-c29b-4227-ae9a-4cfbc4a1e247 cat.3''').touch()",
+      "1": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/ivToolbarClose\").touch()"
+    }
+  },
+  "5": {
+    "action_name": "clicked blabla",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Chat''').touch()",
+      "1": "self.vc.findViewWithContentDescriptionOrRaise(u'''Feed''').touch()"
+    }
+  }
+}
