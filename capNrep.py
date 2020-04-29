@@ -91,6 +91,7 @@ class CaptureAndReplay:
         self.observer.schedule(self.event_handler, path="/Users/caner/Desktop/capNrep/", recursive=False) # mali
         self.observer.start()
         self.checkPopUpIsOpen = False
+        self.actionTypeSet = "Action"
 
         with open("database.json", "r") as fp:
             self.database = json.load(fp)
@@ -604,6 +605,11 @@ class CaptureAndReplay:
                               command = self.parametrizeElement)
         parametrizeButton.grid(column=35, row=6, columnspan=15, sticky=EW)
 
+        addTestArea = Button(self.window,
+                              text="Add Test Area",
+                             command = self.addTestAreaFunc)
+        addTestArea.grid(column=35, row=8, columnspan=15, sticky=EW)
+
         runTestButton = Button(self.window,
                                text="SAVE TEST",
                                command=self.openSaveTestDialog)
@@ -623,14 +629,41 @@ class CaptureAndReplay:
         self.currentEvents.append({action: code})  # mali DONE
         self.updateCurrentEventsList()
 
-    def showSaveActionDialog(self, actionType):
+    def addTestAreaFunc(self):  #caner
+        
+        bddInfoLabel = None
+        selectedItemsFromCurrentEvents = self.currentEventsList.curselection()
+        selectedItemsFromLibrary = self.databaseEventsList.curselection()
 
+        if selectedItemsFromCurrentEvents == ():
+            return
         bddDialog = Toplevel()
-        bddDialog.geometry('500x100+470+350')
+        bddDialog.geometry('500x300+470+350')
         bddDialog.lift()
         bddDialog.attributes('-topmost', True)
 
-        bddInfoLabel = Label(bddDialog, text="GIVE YOUR (%s) ACTION A NAME" % actionType, background="yellow")
+        def on_closing():
+            self.actionTypeSet = 'Action'
+            bddDialog.destroy()
+
+        bddDialog.protocol('WM_DELETE_WINDOW', on_closing)
+
+        v = StringVar(bddDialog, "1")
+
+        def ShowChoice():
+            self.actionTypeSet = v.get()
+            bddInfoLabel['text'] = "GIVE YOUR (%s) ACTION A NAME" % self.actionTypeSet
+
+        givenRadioButton = Radiobutton(bddDialog, text = 'Given', variable = v, command=ShowChoice, value = "Given", indicator = 0, background="#ed4023")
+        givenRadioButton.pack(fill='x', ipady = 3)
+
+        whenRadioButton = Radiobutton(bddDialog, text = 'When', variable = v, command=ShowChoice, value = "When", indicator = 0, background="#033cf6")
+        whenRadioButton.pack(fill='x', ipady = 3)
+
+        thenRadioButton = Radiobutton(bddDialog, text = 'Then', variable = v, command=ShowChoice, value = "Then", indicator = 0, background="#fff952")
+        thenRadioButton.pack(fill='x', ipady = 3)
+
+        bddInfoLabel = Label(bddDialog, text="GIVE YOUR (%s) ACTION A NAME" % self.actionTypeSet)
         bddInfoLabel.pack(fill='x')
 
         functionNameEntry = Entry(bddDialog)
@@ -639,7 +672,73 @@ class CaptureAndReplay:
         tempCurrentEvents = self.currentEventsList.curselection()
 
         def saveOutputFile():
+            tempCodes = {}
 
+            for num, index in enumerate(tempCurrentEvents):
+                for key in self.currentEvents[index].keys():
+                    tempCodes.update({num: self.currentEvents[index][key]})
+
+            tempAction = {
+                "action_name": functionNameEntry.get(),
+                "action_type": self.actionTypeSet,
+                "codes": tempCodes
+            }
+
+            self.database.update({"%s" % str(len(self.database.keys())): tempAction})
+            self.updateDatabaseEventsList()
+
+            for event in reversed(tempCurrentEvents):
+                self.currentEventsList.delete(event)
+
+            if self.actionTypeSet == "Given":
+                self.givenList.insert(END, functionNameEntry.get())
+
+            if self.actionTypeSet == "When":
+                self.whenList.insert(END, functionNameEntry.get())
+
+            if self.actionTypeSet == "Then":
+                self.thenList.insert(END, functionNameEntry.get())
+
+            if selectedItemsFromLibrary != () and self.actionTypeSet == 'Given':
+                for selectedItem in selectedItemsFromLibrary:
+                    self.givenList.insert(END, self.database[str(selectedItem)]['action_name'])
+            if selectedItemsFromLibrary != () and self.actionTypeSet == 'When':
+                for selectedItem in selectedItemsFromLibrary:
+                    self.whenList.insert(END, self.database[str(selectedItem)]['action_name'])
+            if selectedItemsFromLibrary != () and self.actionTypeSet == 'Then':
+                for selectedItem in selectedItemsFromLibrary:
+                    self.thenList.insert(END, self.database[str(selectedItem)]['action_name'])
+
+            self.databaseChanged = True
+            bddDialog.destroy()
+
+        def cancelAction():
+            bddDialog.destroy()
+
+        closeButton = Button(bddDialog, text="CLOSE", command=cancelAction)
+        closeButton.pack(fill='x')
+
+        saveButton = Button(bddDialog, text="SAVE", command=saveOutputFile)
+        saveButton.pack(fill='x')
+
+
+    def showSaveActionDialog(self, actionType):
+ 
+        bddDialog = Toplevel()
+        bddDialog.geometry('500x100+470+350')
+        bddDialog.lift()
+        bddDialog.attributes('-topmost', True)
+
+        bddInfoLabel = Label(bddDialog, text="GIVE YOUR (%s) ACTION A NAME" % actionType)
+        bddInfoLabel.pack(fill='x')
+
+        functionNameEntry = Entry(bddDialog)
+        functionNameEntry.pack(fill='x')
+
+        tempCurrentEvents = self.currentEventsList.curselection()
+
+        def saveOutputFile():
+            
             tempCodes = {}
 
             for num, index in enumerate(tempCurrentEvents):
