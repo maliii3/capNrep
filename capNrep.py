@@ -5,6 +5,7 @@ import re
 import subprocess
 import threading
 import watchdog
+import copy
 from tkinter import *
 from tkinter import ttk
 
@@ -12,6 +13,8 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 isFileInitiated = False
+
+counter = 0
 
 
 class ThreadedTask(threading.Thread):
@@ -85,8 +88,9 @@ class CaptureAndReplay:
         self.event_handler = watchdog.events.FileSystemEventHandler()
         self.event_handler.on_modified = self.on_modified
         self.observer = Observer()
-        self.observer.schedule(self.event_handler, path="/Users/mali/Desktop/ENS 492/", recursive=False)
+        self.observer.schedule(self.event_handler, path="/Users/caner/Desktop/capNrep/", recursive=False) # mali
         self.observer.start()
+        self.checkPopUpIsOpen = False
 
         with open("database.json", "r") as fp:
             self.database = json.load(fp)
@@ -179,7 +183,6 @@ class CaptureAndReplay:
     def on_modified(self, event):
         if event.src_path.find("currentRecord.txt") > 0:
             global isFileInitiated
-
             if isFileInitiated:
                 self.callBDDDialog()
 
@@ -331,6 +334,90 @@ class CaptureAndReplay:
         if moveFromThenList != ():
             for pos in moveFromThenList:
                 self.thenList.delete(pos)
+    
+    def parametrizeElement(self):
+
+        def on_closing():
+            self.checkPopUpIsOpen = False
+            popup.destroy()
+
+        parametrizeFromGivenList = self.givenList.curselection()
+        parametrizeFromWhenList = self.whenList.curselection()
+        parametrizeFromThenList = self.thenList.curselection()
+        if parametrizeFromGivenList == () and parametrizeFromWhenList == () and parametrizeFromThenList == ():
+            return
+        if self.checkPopUpIsOpen == True:
+            return
+        self.checkPopUpIsOpen = True
+        # Given
+        if parametrizeFromGivenList != ():
+            popup = Toplevel()
+            popup.geometry("700x300+550+350")
+            popup.lift()
+            popup.attributes('-topmost', True)
+            popup.protocol("WM_DELETE_WINDOW", on_closing)
+            codeDictionary = self.database[str(parametrizeFromGivenList[0])]["codes"]
+            filenameInputTexts = []
+
+            global counter
+            counter = 0
+            for index in codeDictionary:
+                label = Label(popup, text=codeDictionary[index], anchor=W)
+                label.pack(fill='x')
+
+                filenameInputTexts.append(Entry(popup))
+                filenameInputTexts[counter].pack(fill='x')
+                counter += 1
+            def saveNewParametrizes():
+                global counter
+                counter -= 1
+                quotesString = "'''"
+                quoteString = "'"
+                counterOfParametrizationIndex = 0
+                temp = copy.deepcopy(self.database[str(parametrizeFromGivenList[0])])
+                lenDbString = str(len(self.database))
+                for filenameInputText in filenameInputTexts:
+                    text = filenameInputText.get()
+                    if text != "":
+                        self.database[lenDbString] = self.database[str(parametrizeFromGivenList[0])]
+                        # for codes 
+                        codeDictionary = self.database[lenDbString]["codes"]
+                        findFirstIndex = codeDictionary[str(counter)].find(quotesString)
+                        findSecondIndex = codeDictionary[str(counter)].find(quotesString,findFirstIndex+len(quotesString))
+                        parametrizedWord = codeDictionary[str(counter)][findFirstIndex + len(quotesString):findSecondIndex]
+                        codeDictionary[str(counter)] = codeDictionary[str(counter)].replace(parametrizedWord, text)
+                        # for action name
+                        actionDictionary = self.database[lenDbString]["action_name"]
+                        findFirstIndex = actionDictionary.find(quoteString,counterOfParametrizationIndex)
+                        if findFirstIndex != -1:
+                            findSecondIndex = actionDictionary.find(quoteString,findFirstIndex+len(quoteString))
+                            parametrizedWord = actionDictionary[findFirstIndex + len(quoteString):findSecondIndex]
+                            counterOfParametrizationIndex = findSecondIndex + 1 +len(text) - len(parametrizedWord) 
+                            self.database[lenDbString]["action_name"] = actionDictionary.replace("'" + parametrizedWord + "'", "'" + text + "'")                
+                    counter -= 1
+                self.database[lenDbString] = temp    
+                tempList = []
+                for i in range(self.givenList.size()):
+                    tempList.append(self.givenList.get(i))
+                self.givenList.delete(0, END)  # clear listbox
+                for i in range(len(tempList)):
+                    if i == parametrizeFromGivenList[0]:
+                        self.givenList.insert(END, self.database[str(parametrizeFromGivenList[0])]['action_name'])
+                    else:
+                        self.givenList.insert(END, tempList[i])
+                self.updateDatabaseEventsList()
+                self.checkPopUpIsOpen = False
+                popup.destroy()
+                
+                
+
+
+            
+            saveButton = Button(popup, text="Save", command=saveNewParametrizes)
+            saveButton.pack(fill='x')
+        
+        self.updateDatabaseEventsList()
+        
 
     def writeHeader(self):
 
@@ -512,6 +599,11 @@ class CaptureAndReplay:
                               command=self.removeElement)
         removeButton.grid(column=45, row=5, columnspan=5, sticky=EW)
 
+        parametrizeButton = Button(self.window,
+                              text="PARAMETRIZE",
+                              command = self.parametrizeElement)
+        parametrizeButton.grid(column=35, row=6, columnspan=15, sticky=EW)
+
         runTestButton = Button(self.window,
                                text="SAVE TEST",
                                command=self.openSaveTestDialog)
@@ -522,7 +614,6 @@ class CaptureAndReplay:
                            sticky=NSEW)
 
     def showBDDDialog(self):
-
         with open('currentRecord.txt', 'r') as f:
             lines = f.read().splitlines()
             last_lines = lines[-3:-1]
@@ -589,7 +680,6 @@ class CaptureAndReplay:
         saveButton.pack(fill='x')
 
     def callBDDDialog(self):
-
         self.queue = queue.Queue()
         ThreadedTask(self.queue).start()
         self.window.after(100, self.process_queue)
