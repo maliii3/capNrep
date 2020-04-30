@@ -3,7 +3,6 @@ import os
 import queue
 import re
 import subprocess
-import threading
 import watchdog
 import copy
 from tkinter import *
@@ -633,12 +632,12 @@ class CaptureAndReplay:
         
         bddInfoLabel = None
         selectedItemsFromCurrentEvents = self.currentEventsList.curselection()
-        selectedItemsFromLibrary = self.databaseEventsList.curselection()
+        # selectedItemsFromLibrary = self.databaseEventsList.curselection()
 
         if selectedItemsFromCurrentEvents == ():
             return
         bddDialog = Toplevel()
-        bddDialog.geometry('500x300+470+350')
+        bddDialog.geometry('500x600+470+350')
         bddDialog.lift()
         bddDialog.attributes('-topmost', True)
 
@@ -669,48 +668,84 @@ class CaptureAndReplay:
         functionNameEntry = Entry(bddDialog)
         functionNameEntry.pack(fill='x')
 
-        tempCurrentEvents = self.currentEventsList.curselection()
+        eventsLabel = []
+        functionsEntry = []
+        index = 0
+        entriesText= []
 
+        def callback(index, key):
+            nonlocal entriesText
+            print(entriesText[index].get())
+            oldLabelText = self.currentEvents[index][key]
+            eventsLabel[index]['text'] = 
+            return True
+    
+        
+        for num, index in enumerate(selectedItemsFromCurrentEvents):
+            for key in self.currentEvents[index].keys():
+                eventsLabel.append(Label(bddDialog, text=self.currentEvents[index][key]))
+                eventsLabel[index].pack(fill='x')
+                entriesText.append(StringVar())
+                functionsEntry.append(Entry(bddDialog, textvariable=entriesText[index], validate="focusout", validatecommand=callback(index, key)))
+                functionsEntry[index].pack(fill='x')
+                index += 1
+        errored = False
+        erroredAction = False
         def saveOutputFile():
-            tempCodes = {}
+            if self.actionTypeSet == 'Action':
+                nonlocal erroredAction
+                if erroredAction == False:
+                    errorLabelAction = Label(bddDialog, text="Please select given, when or then", background="red")
+                    errorLabelAction.pack(fill='x')
+                    errorLabelAction.after(5000, lambda: errorLabelAction.destroy())
+                    erroredAction= True
+            else:
+                if len(selectedItemsFromCurrentEvents)*2 !=  functionNameEntry.get().count("'"):
+                    nonlocal errored
+                    if errored == False:
+                        errorLabel = Label(bddDialog, text="Please take ' paranthesis your parametrized words", background="red")
+                        errorLabel.pack(fill='x')
+                        errorLabel.after(5000, lambda: errorLabel.destroy())
+                        errored= True
+                else:
+                    tempCodes = {}
+                    for num, index in enumerate(selectedItemsFromCurrentEvents):
+                        for key in self.currentEvents[index].keys():
+                            tempCodes.update({num: self.currentEvents[index][key]})
 
-            for num, index in enumerate(tempCurrentEvents):
-                for key in self.currentEvents[index].keys():
-                    tempCodes.update({num: self.currentEvents[index][key]})
+                    tempAction = {
+                        "action_name": functionNameEntry.get(),
+                        "action_type": self.actionTypeSet,
+                        "codes": tempCodes
+                    }
 
-            tempAction = {
-                "action_name": functionNameEntry.get(),
-                "action_type": self.actionTypeSet,
-                "codes": tempCodes
-            }
+                    self.database.update({"%s" % str(len(self.database.keys())): tempAction})
+                    self.updateDatabaseEventsList()
 
-            self.database.update({"%s" % str(len(self.database.keys())): tempAction})
-            self.updateDatabaseEventsList()
+                    for event in reversed(selectedItemsFromCurrentEvents):
+                        self.currentEventsList.delete(event)
 
-            for event in reversed(tempCurrentEvents):
-                self.currentEventsList.delete(event)
+                    if self.actionTypeSet == "Given":
+                        self.givenList.insert(END, functionNameEntry.get())
 
-            if self.actionTypeSet == "Given":
-                self.givenList.insert(END, functionNameEntry.get())
+                    if self.actionTypeSet == "When":
+                        self.whenList.insert(END, functionNameEntry.get())
 
-            if self.actionTypeSet == "When":
-                self.whenList.insert(END, functionNameEntry.get())
+                    if self.actionTypeSet == "Then":
+                        self.thenList.insert(END, functionNameEntry.get())
 
-            if self.actionTypeSet == "Then":
-                self.thenList.insert(END, functionNameEntry.get())
+                    # if selectedItemsFromLibrary != () and self.actionTypeSet == 'Given':
+                    #     for selectedItem in selectedItemsFromLibrary:
+                    #         self.givenList.insert(END, self.database[str(selectedItem)]['action_name'])
+                    # if selectedItemsFromLibrary != () and self.actionTypeSet == 'When':
+                    #     for selectedItem in selectedItemsFromLibrary:
+                    #         self.whenList.insert(END, self.database[str(selectedItem)]['action_name'])
+                    # if selectedItemsFromLibrary != () and self.actionTypeSet == 'Then':
+                    #     for selectedItem in selectedItemsFromLibrary:
+                    #         self.thenList.insert(END, self.database[str(selectedItem)]['action_name'])
 
-            if selectedItemsFromLibrary != () and self.actionTypeSet == 'Given':
-                for selectedItem in selectedItemsFromLibrary:
-                    self.givenList.insert(END, self.database[str(selectedItem)]['action_name'])
-            if selectedItemsFromLibrary != () and self.actionTypeSet == 'When':
-                for selectedItem in selectedItemsFromLibrary:
-                    self.whenList.insert(END, self.database[str(selectedItem)]['action_name'])
-            if selectedItemsFromLibrary != () and self.actionTypeSet == 'Then':
-                for selectedItem in selectedItemsFromLibrary:
-                    self.thenList.insert(END, self.database[str(selectedItem)]['action_name'])
-
-            self.databaseChanged = True
-            bddDialog.destroy()
+                    self.databaseChanged = True
+                    bddDialog.destroy()
 
         def cancelAction():
             bddDialog.destroy()
