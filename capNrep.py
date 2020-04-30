@@ -701,8 +701,8 @@ class CaptureAndReplay:
             findFirstIndex = actionName.find(quotesString)
             findSecondIndex = actionName.find(quotesString,findFirstIndex+len(quotesString))
             parametrizedWord = actionName[findFirstIndex + len(quotesString):findSecondIndex]
-            newActionName = actionName.replace(parametrizedWord, entriesText[index].get())
-            oldCodeText = oldCodeText.replace(parametrizedWord, entriesText[index].get())
+            newActionName = actionName.replace("'''" + parametrizedWord + "'''" ,"'''" + entriesText[index].get() + "'''")
+            oldCodeText = oldCodeText.replace("'''" + parametrizedWord + "'''" ,"'''" + entriesText[index].get() + "'''")
             self.currentEvents[index][newActionName] = oldCodeText
             nonlocal builded
             if builded != False:
