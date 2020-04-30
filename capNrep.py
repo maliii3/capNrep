@@ -3,8 +3,10 @@ import os
 import queue
 import re
 import subprocess
+import threading
 import watchdog
 import copy
+import threading 
 from tkinter import *
 from tkinter import ttk
 
@@ -641,7 +643,11 @@ class CaptureAndReplay:
         bddDialog.lift()
         bddDialog.attributes('-topmost', True)
 
+        builded = False
+
         def on_closing():
+            nonlocal builded
+            builded = False
             self.actionTypeSet = 'Action'
             bddDialog.destroy()
 
@@ -672,41 +678,76 @@ class CaptureAndReplay:
         functionsEntry = []
         index = 0
         entriesText= []
-
-        def callback(index, key):
-            nonlocal entriesText
-            print(entriesText[index].get())
-            oldLabelText = self.currentEvents[index][key]
-            eventsLabel[index]['text'] = 
+        entriesTextIndex = []
+        
+        def callback():
+            nonlocal entriesText, eventsLabel, entriesTextIndex
+            index = -1
+            for i in range(len(entriesTextIndex)):
+                if entriesTextIndex[i] != entriesText[i].get():
+                    index = i
+                    entriesTextIndex[i] = entriesText[i].get()
+                    break
+            if index == -1:
+                return
+            quotesString = "'''"
+            quoteString = "'"
+            oldLabelText = ""
+            actionName = ""
+            oldCodeText = ""
+            for key in self.currentEvents[index].keys():
+                actionName = key
+                oldCodeText = self.currentEvents[index][key]
+            findFirstIndex = actionName.find(quotesString)
+            findSecondIndex = actionName.find(quotesString,findFirstIndex+len(quotesString))
+            parametrizedWord = actionName[findFirstIndex + len(quotesString):findSecondIndex]
+            newActionName = actionName.replace(parametrizedWord, entriesText[index].get())
+            oldCodeText = oldCodeText.replace(parametrizedWord, entriesText[index].get())
+            self.currentEvents[index][newActionName] = oldCodeText
+            nonlocal builded
+            if builded != False:
+                del self.currentEvents[index][actionName]
+            eventsLabel[index]['text'] = newActionName
+            self.updateCurrentEventsList()
             return True
     
         
         for num, index in enumerate(selectedItemsFromCurrentEvents):
             for key in self.currentEvents[index].keys():
-                eventsLabel.append(Label(bddDialog, text=self.currentEvents[index][key]))
+                quotesString = "'''"
+                LabelText = key
+                findFirstIndex = LabelText.find(quotesString)
+                findSecondIndex = LabelText.find(quotesString,findFirstIndex+len(quotesString))
+                parametrizedWord = LabelText[findFirstIndex + len(quotesString):findSecondIndex]
+                eventsLabel.append(Label(bddDialog, text=LabelText))
                 eventsLabel[index].pack(fill='x')
                 entriesText.append(StringVar())
-                functionsEntry.append(Entry(bddDialog, textvariable=entriesText[index], validate="focusout", validatecommand=callback(index, key)))
+                entriesText[index].trace("w", lambda name, index, mode, sv=entriesText[index]: callback())
+                entriesText[index].set(parametrizedWord)
+                entriesTextIndex.append(parametrizedWord)
+                functionsEntry.append(Entry(bddDialog, textvariable=entriesText[index]))
                 functionsEntry[index].pack(fill='x')
                 index += 1
-        errored = False
-        erroredAction = False
+        builded = True
+        errorLabelAction = Label(bddDialog, text="Please select given, when or then", background="red")
+        errorLabel = Label(bddDialog, text="Please take ' paranthesis your parametrized words", background="red")
+        errorLabelAction.destroy()
+        errorLabel.destroy()
         def saveOutputFile():
+
             if self.actionTypeSet == 'Action':
-                nonlocal erroredAction
-                if erroredAction == False:
+                nonlocal errorLabelAction
+                if errorLabelAction.winfo_exists() == 0:
                     errorLabelAction = Label(bddDialog, text="Please select given, when or then", background="red")
                     errorLabelAction.pack(fill='x')
                     errorLabelAction.after(5000, lambda: errorLabelAction.destroy())
-                    erroredAction= True
             else:
                 if len(selectedItemsFromCurrentEvents)*2 !=  functionNameEntry.get().count("'"):
-                    nonlocal errored
-                    if errored == False:
+                    nonlocal errorLabel
+                    if errorLabel.winfo_exists() == 0:
                         errorLabel = Label(bddDialog, text="Please take ' paranthesis your parametrized words", background="red")
                         errorLabel.pack(fill='x')
                         errorLabel.after(5000, lambda: errorLabel.destroy())
-                        errored= True
                 else:
                     tempCodes = {}
                     for num, index in enumerate(selectedItemsFromCurrentEvents):
