@@ -324,7 +324,7 @@ class CaptureAndReplay:
         moveFromGivenList = self.givenList.curselection()
         moveFromWhenList = self.whenList.curselection()
         moveFromThenList = self.thenList.curselection()
-
+        moveFromCurrentList = self.currentEventsList.curselection()
         if moveFromGivenList != ():
             for pos in moveFromGivenList:
                 self.givenList.delete(pos)
@@ -336,8 +336,14 @@ class CaptureAndReplay:
         if moveFromThenList != ():
             for pos in moveFromThenList:
                 self.thenList.delete(pos)
+
+        if moveFromCurrentList != ():
+            for pos in moveFromCurrentList:
+                self.currentEvents.remove(self.currentEvents[pos])
+                self.currentEventsList.delete(pos)
     
     def parametrizeElement(self):
+        counter = 0 
 
         def on_closing():
             self.checkPopUpIsOpen = False
@@ -358,10 +364,14 @@ class CaptureAndReplay:
             popup.lift()
             popup.attributes('-topmost', True)
             popup.protocol("WM_DELETE_WINDOW", on_closing)
-            codeDictionary = self.database[str(parametrizeFromGivenList[0])]["codes"]
+            actionName = self.givenList.get(parametrizeFromGivenList[0])
+            indexOnDb = ""
+            for key in self.database.keys():
+                if self.database[key]["action_name"] == actionName:
+                    indexOnDb = key
+            codeDictionary = self.database[indexOnDb]["codes"]
             filenameInputTexts = []
 
-            global counter
             counter = 0
             for index in codeDictionary:
                 label = Label(popup, text=codeDictionary[index], anchor=W)
@@ -371,17 +381,17 @@ class CaptureAndReplay:
                 filenameInputTexts[counter].pack(fill='x')
                 counter += 1
             def saveNewParametrizes():
-                global counter
+                nonlocal counter
                 counter -= 1
                 quotesString = "'''"
                 quoteString = "'"
                 counterOfParametrizationIndex = 0
-                temp = copy.deepcopy(self.database[str(parametrizeFromGivenList[0])])
+                temp = copy.deepcopy(self.database[indexOnDb])
                 lenDbString = str(len(self.database))
                 for filenameInputText in filenameInputTexts:
                     text = filenameInputText.get()
                     if text != "":
-                        self.database[lenDbString] = self.database[str(parametrizeFromGivenList[0])]
+                        self.database[lenDbString] = self.database[indexOnDb]
                         # for codes 
                         codeDictionary = self.database[lenDbString]["codes"]
                         findFirstIndex = codeDictionary[str(counter)].find(quotesString)
@@ -404,7 +414,7 @@ class CaptureAndReplay:
                 self.givenList.delete(0, END)  # clear listbox
                 for i in range(len(tempList)):
                     if i == parametrizeFromGivenList[0]:
-                        self.givenList.insert(END, self.database[str(parametrizeFromGivenList[0])]['action_name'])
+                        self.givenList.insert(END, self.database[indexOnDb]['action_name'])
                     else:
                         self.givenList.insert(END, tempList[i])
                 self.updateDatabaseEventsList()
@@ -418,6 +428,148 @@ class CaptureAndReplay:
             saveButton = Button(popup, text="Save", command=saveNewParametrizes)
             saveButton.pack(fill='x')
         
+        # When
+        if parametrizeFromWhenList != ():
+            popup = Toplevel()
+            popup.geometry("700x300+550+350")
+            popup.lift()
+            popup.attributes('-topmost', True)
+            popup.protocol("WM_DELETE_WINDOW", on_closing)
+            actionName = self.whenList.get(parametrizeFromWhenList[0])
+            indexOnDb = ""
+            for key in self.database.keys():
+                if self.database[key]["action_name"] == actionName:
+                    indexOnDb = key
+            codeDictionary = self.database[indexOnDb]["codes"]
+            filenameInputTexts = []
+
+            counter = 0
+            for index in codeDictionary:
+                label = Label(popup, text=codeDictionary[index], anchor=W)
+                label.pack(fill='x')
+
+                filenameInputTexts.append(Entry(popup))
+                filenameInputTexts[counter].pack(fill='x')
+                counter += 1
+            def saveNewParametrizes():
+                nonlocal counter
+                counter -= 1
+                quotesString = "'''"
+                quoteString = "'"
+                counterOfParametrizationIndex = 0
+                temp = copy.deepcopy(self.database[str(parametrizeFromWhenList[0])])
+                lenDbString = str(len(self.database))
+                for filenameInputText in filenameInputTexts:
+                    text = filenameInputText.get()
+                    if text != "":
+                        self.database[lenDbString] = self.database[str(parametrizeFromWhenList[0])]
+                        # for codes 
+                        codeDictionary = self.database[lenDbString]["codes"]
+                        findFirstIndex = codeDictionary[str(counter)].find(quotesString)
+                        findSecondIndex = codeDictionary[str(counter)].find(quotesString,findFirstIndex+len(quotesString))
+                        parametrizedWord = codeDictionary[str(counter)][findFirstIndex + len(quotesString):findSecondIndex]
+                        codeDictionary[str(counter)] = codeDictionary[str(counter)].replace(parametrizedWord, text)
+                        # for action name
+                        actionDictionary = self.database[lenDbString]["action_name"]
+                        findFirstIndex = actionDictionary.find(quoteString,counterOfParametrizationIndex)
+                        if findFirstIndex != -1:
+                            findSecondIndex = actionDictionary.find(quoteString,findFirstIndex+len(quoteString))
+                            parametrizedWord = actionDictionary[findFirstIndex + len(quoteString):findSecondIndex]
+                            counterOfParametrizationIndex = findSecondIndex + 1 +len(text) - len(parametrizedWord) 
+                            self.database[lenDbString]["action_name"] = actionDictionary.replace("'" + parametrizedWord + "'", "'" + text + "'")                
+                    counter -= 1
+                self.database[lenDbString] = temp    
+                tempList = []
+                for i in range(self.whenList.size()):
+                    tempList.append(self.whenList.get(i))
+                self.whenList.delete(0, END)  # clear listbox
+                for i in range(len(tempList)):
+                    if i == parametrizeFromWhenList[0]:
+                        self.whenList.insert(END, self.database[str(parametrizeFromWhenList[0])]['action_name'])
+                    else:
+                        self.whenList.insert(END, tempList[i])
+                self.updateDatabaseEventsList()
+                self.checkPopUpIsOpen = False
+                popup.destroy()
+                
+                
+
+
+            
+            saveButton = Button(popup, text="Save", command=saveNewParametrizes)
+            saveButton.pack(fill='x')
+        
+        # Then
+        if parametrizeFromThenList != ():
+            popup = Toplevel()
+            popup.geometry("700x300+550+350")
+            popup.lift()
+            popup.attributes('-topmost', True)
+            popup.protocol("WM_DELETE_WINDOW", on_closing)
+            actionName = self.thenList.get(parametrizeFromThenList[0])
+            indexOnDb = ""
+            for key in self.database.keys():
+                if self.database[key]["action_name"] == actionName:
+                    indexOnDb = key
+            codeDictionary = self.database[indexOnDb]["codes"]
+            filenameInputTexts = []
+
+            counter = 0
+            for index in codeDictionary:
+                label = Label(popup, text=codeDictionary[index], anchor=W)
+                label.pack(fill='x')
+
+                filenameInputTexts.append(Entry(popup))
+                filenameInputTexts[counter].pack(fill='x')
+                counter += 1
+            def saveNewParametrizes():
+                nonlocal counter
+                counter -= 1
+                quotesString = "'''"
+                quoteString = "'"
+                counterOfParametrizationIndex = 0
+                temp = copy.deepcopy(self.database[str(parametrizeFromThenList[0])])
+                lenDbString = str(len(self.database))
+                for filenameInputText in filenameInputTexts:
+                    text = filenameInputText.get()
+                    if text != "":
+                        self.database[lenDbString] = self.database[str(parametrizeFromThenList[0])]
+                        # for codes 
+                        codeDictionary = self.database[lenDbString]["codes"]
+                        findFirstIndex = codeDictionary[str(counter)].find(quotesString)
+                        findSecondIndex = codeDictionary[str(counter)].find(quotesString,findFirstIndex+len(quotesString))
+                        parametrizedWord = codeDictionary[str(counter)][findFirstIndex + len(quotesString):findSecondIndex]
+                        codeDictionary[str(counter)] = codeDictionary[str(counter)].replace(parametrizedWord, text)
+                        # for action name
+                        actionDictionary = self.database[lenDbString]["action_name"]
+                        findFirstIndex = actionDictionary.find(quoteString,counterOfParametrizationIndex)
+                        if findFirstIndex != -1:
+                            findSecondIndex = actionDictionary.find(quoteString,findFirstIndex+len(quoteString))
+                            parametrizedWord = actionDictionary[findFirstIndex + len(quoteString):findSecondIndex]
+                            counterOfParametrizationIndex = findSecondIndex + 1 +len(text) - len(parametrizedWord) 
+                            self.database[lenDbString]["action_name"] = actionDictionary.replace("'" + parametrizedWord + "'", "'" + text + "'")                
+                    counter -= 1
+                self.database[lenDbString] = temp    
+                tempList = []
+                for i in range(self.thenList.size()):
+                    tempList.append(self.thenList.get(i))
+                self.thenList.delete(0, END)  # clear listbox
+                for i in range(len(tempList)):
+                    if i == parametrizeFromThenList[0]:
+                        self.thenList.insert(END, self.database[str(parametrizeFromThenList[0])]['action_name'])
+                    else:
+                        self.thenList.insert(END, tempList[i])
+                self.updateDatabaseEventsList()
+                self.checkPopUpIsOpen = False
+                popup.destroy()
+                
+                
+
+
+            
+            saveButton = Button(popup, text="Save", command=saveNewParametrizes)
+            saveButton.pack(fill='x')
+
         self.updateDatabaseEventsList()
         
 
@@ -679,9 +831,11 @@ class CaptureAndReplay:
         index = 0
         entriesText= []
         entriesTextIndex = []
-        
+        # bu kisimda indexing dogru degil maalesef. Düzeltilmesi gerek
+        nonParametrizedWordCount = 0
+        startingIndex = 0
         def callback():
-            nonlocal entriesText, eventsLabel, entriesTextIndex
+            nonlocal entriesText, eventsLabel, entriesTextIndex, nonParametrizedWordCount, startingIndex
             index = -1
             for i in range(len(entriesTextIndex)):
                 if entriesTextIndex[i] != entriesText[i].get():
@@ -695,39 +849,65 @@ class CaptureAndReplay:
             oldLabelText = ""
             actionName = ""
             oldCodeText = ""
-            for key in self.currentEvents[index].keys():
+            for key in self.currentEvents[index+ nonParametrizedWordCount + startingIndex].keys():
                 actionName = key
-                oldCodeText = self.currentEvents[index][key]
+                oldCodeText = self.currentEvents[index+ nonParametrizedWordCount + startingIndex][key]
             findFirstIndex = actionName.find(quotesString)
-            findSecondIndex = actionName.find(quotesString,findFirstIndex+len(quotesString))
-            parametrizedWord = actionName[findFirstIndex + len(quotesString):findSecondIndex]
-            newActionName = actionName.replace("'''" + parametrizedWord + "'''" ,"'''" + entriesText[index].get() + "'''")
-            oldCodeText = oldCodeText.replace("'''" + parametrizedWord + "'''" ,"'''" + entriesText[index].get() + "'''")
-            self.currentEvents[index][newActionName] = oldCodeText
+            if findFirstIndex != -1:
+                findSecondIndex = actionName.find(quotesString,findFirstIndex+len(quotesString))
+                parametrizedWord = actionName[findFirstIndex + len(quotesString):findSecondIndex]
+                newActionName = actionName.replace("'''" + parametrizedWord + "'''" ,"'''" + entriesText[index].get() + "'''")
+                oldCodeText = oldCodeText.replace("'''" + parametrizedWord + "'''" ,"'''" + entriesText[index].get() + "'''")
+            else:
+                findFirstIndex = actionName.find(quoteString)
+                findSecondIndex = actionName.find(quoteString,findFirstIndex+len(quoteString))
+                parametrizedWord = actionName[findFirstIndex + len(quoteString):findSecondIndex]
+                newActionName = actionName.replace("'" + parametrizedWord + "'" ,"'" + entriesText[index].get() + "'")
+                oldCodeText = oldCodeText.replace("'" + parametrizedWord + "'" ,"'" + entriesText[index].get() + "'")
+            self.currentEvents[index+ nonParametrizedWordCount + startingIndex][newActionName] = oldCodeText
             nonlocal builded
             if builded != False:
-                del self.currentEvents[index][actionName]
+                del self.currentEvents[index+ nonParametrizedWordCount + startingIndex][actionName]
             eventsLabel[index]['text'] = newActionName
             self.updateCurrentEventsList()
             return True
-    
-        
+
+        check = True
         for num, index in enumerate(selectedItemsFromCurrentEvents):
+            if check == True:
+                check = False
+                startingIndex = index
+            print('num', num)
+            print('index', index)
             for key in self.currentEvents[index].keys():
                 quotesString = "'''"
+                quoteString = "'"
                 LabelText = key
+                parametrizedWord = ""
                 findFirstIndex = LabelText.find(quotesString)
-                findSecondIndex = LabelText.find(quotesString,findFirstIndex+len(quotesString))
-                parametrizedWord = LabelText[findFirstIndex + len(quotesString):findSecondIndex]
+                if findFirstIndex != -1:
+                    findSecondIndex = LabelText.find(quotesString,findFirstIndex+len(quotesString))
+                    parametrizedWord = LabelText[findFirstIndex + len(quotesString):findSecondIndex]
+                else:
+                    findFirstIndex = LabelText.find(quoteString)
+                    if findFirstIndex != -1:
+                        findSecondIndex = LabelText.find(quoteString,findFirstIndex+len(quoteString))
+                        parametrizedWord = LabelText[findFirstIndex + len(quoteString):findSecondIndex]
+                    else:
+                        print('Entered')
+                        nonParametrizedWordCount += 1
+                        continue
+                print("index-nonParametrizedWordCount",index-nonParametrizedWordCount-startingIndex)
                 eventsLabel.append(Label(bddDialog, text=LabelText))
-                eventsLabel[index].pack(fill='x')
+                eventsLabel[index-nonParametrizedWordCount-startingIndex].pack(fill='x')
                 entriesText.append(StringVar())
-                entriesText[index].trace("w", lambda name, index, mode, sv=entriesText[index]: callback())
-                entriesText[index].set(parametrizedWord)
+                entriesText[index-nonParametrizedWordCount-startingIndex].trace("w", lambda name, index, mode, sv=entriesText[index-nonParametrizedWordCount-startingIndex]: callback())
+                entriesText[index-nonParametrizedWordCount-startingIndex].set(parametrizedWord)
                 entriesTextIndex.append(parametrizedWord)
-                functionsEntry.append(Entry(bddDialog, textvariable=entriesText[index]))
-                functionsEntry[index].pack(fill='x')
-                index += 1
+                functionsEntry.append(Entry(bddDialog, textvariable=entriesText[index-nonParametrizedWordCount-startingIndex]))
+                functionsEntry[index-nonParametrizedWordCount-startingIndex].pack(fill='x')
+                # index += 1
+                # indexTrack += 1
         builded = True
         errorLabelAction = Label(bddDialog, text="Please select given, when or then", background="red")
         errorLabel = Label(bddDialog, text="Please take ' paranthesis your parametrized words", background="red")
@@ -742,7 +922,7 @@ class CaptureAndReplay:
                     errorLabelAction.pack(fill='x')
                     errorLabelAction.after(5000, lambda: errorLabelAction.destroy())
             else:
-                if len(selectedItemsFromCurrentEvents)*2 !=  functionNameEntry.get().count("'"):
+                if (len(selectedItemsFromCurrentEvents) - nonParametrizedWordCount)*2 !=  functionNameEntry.get().count("'"):
                     nonlocal errorLabel
                     if errorLabel.winfo_exists() == 0:
                         errorLabel = Label(bddDialog, text="Please take ' paranthesis your parametrized words", background="red")
@@ -763,8 +943,9 @@ class CaptureAndReplay:
                     self.database.update({"%s" % str(len(self.database.keys())): tempAction})
                     self.updateDatabaseEventsList()
 
-                    for event in reversed(selectedItemsFromCurrentEvents):
-                        self.currentEventsList.delete(event)
+                    # for event in reversed(selectedItemsFromCurrentEvents):
+                    #     self.currentEvents.remove(self.currentEvents[event])
+                    #     self.currentEventsList.delete(event)
 
                     if self.actionTypeSet == "Given":
                         self.givenList.insert(END, functionNameEntry.get())
