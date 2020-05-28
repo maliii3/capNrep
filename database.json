@@ -24,31 +24,231 @@
     }
   },
   "3": {
-    "action_name": "qweqwe",
+    "action_name": "I click 'Search' icon ",
     "action_type": "Given",
     "codes": {
-      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Feed''').touch()",
-      "1": "self.vc.findViewWithContentDescriptionOrRaise(u'''d18fdf4c-eeb7-47c7-97ec-d0fc16002e40 cat.8''').touch()",
-      "2": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/ivClose\").touch()",
-      "3": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/ivToolbarClose\").touch()",
-      "4": "self.vc.findViewWithContentDescriptionOrRaise(u'''f09143b5-76bb-415d-a4dd-e44019b4da5f cat.2''').touch()",
-      "5": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/ivToolbarClose\").touch()"
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()"
     }
   },
   "4": {
-    "action_name": "clicked a photo and exited it",
-    "action_type": "When",
+    "action_name": "\u0131 click filter and i select 'Cars' as element, and i click 'Apply' to apply filter",
+    "action_type": "Given",
     "codes": {
-      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''307ccb8c-c29b-4227-ae9a-4cfbc4a1e247 cat.3''').touch()",
-      "1": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/ivToolbarClose\").touch()"
+      "0": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/cntCategoriesFilter\").touch()",
+      "1": "self.vc.findViewWithTextOrRaise(u'Cars', root=self.vc.findViewByIdOrRaise('id/no_id/7')).touch()",
+      "2": "self.vc.findViewWithTextOrRaise(u'Apply', root=self.vc.findViewByIdOrRaise('id/no_id/27')).touch()"
     }
   },
   "5": {
-    "action_name": "clicked blabla",
+    "action_name": "i am on Feed and i click 'Search' (Filter) icon",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()"
+    }
+  },
+  "6": {
+    "action_name": "\u0131 click for categoryFilter and i select 'Electronics' and i click 'Apply' to see results",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/cntCategoriesFilter\").touch()",
+      "1": "self.vc.findViewWithTextOrRaise(u'Electronics', root=self.vc.findViewByIdOrRaise('id/no_id/13')).touch()",
+      "2": "self.vc.findViewWithTextOrRaise(u'Apply', root=self.vc.findViewByIdOrRaise('id/no_id/34')).touch()"
+    }
+  },
+  "7": {
+    "action_name": "I click 'Electronics', i will be on Feed without filtered data",
     "action_type": "Then",
     "codes": {
-      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Chat''').touch()",
-      "1": "self.vc.findViewWithContentDescriptionOrRaise(u'''Feed''').touch()"
+      "0": "self.vc.findViewWithTextOrRaise(u'Electronics', root=self.vc.findViewByIdOrRaise('id/no_id/11')).touch()"
+    }
+  },
+  "8": {
+    "action_name": "I click 'Search' icon for filtering data",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()"
+    }
+  },
+  "9": {
+    "action_name": "I click on 'Search' icon for open filtering page",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()"
+    }
+  },
+  "10": {
+    "action_name": "'qweqwe;'",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()"
+    }
+  },
+  "11": {
+    "action_name": "I click on 'Free Stuff' for filtering data and i click 'Apply' button ",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/cntCategoriesFilter\").touch()",
+      "1": "self.vc.findViewWithTextOrRaise(u'Free Stuff', root=self.vc.findViewByIdOrRaise('id/no_id/15')).touch()",
+      "2": "self.vc.findViewWithTextOrRaise(u'Apply', root=self.vc.findViewByIdOrRaise('id/no_id/41')).touch()"
+    }
+  },
+  "12": {
+    "action_name": "I click 'Search' icon for opening filtering page",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()"
+    }
+  },
+  "13": {
+    "action_name": "I click 'Free Stuff' content which remove filtering selected item",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'Free Stuff', root=self.vc.findViewByIdOrRaise('id/no_id/11')).touch()"
+    }
+  },
+  "14": {
+    "action_name": "\u0131 select 'Electronics' and i click 'Apply'",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/cntCategoriesFilter\").touch()",
+      "1": "self.vc.findViewWithTextOrRaise(u'Free Stuff', root=self.vc.findViewByIdOrRaise('id/no_id/15')).touch()",
+      "2": "self.vc.findViewWithTextOrRaise(u'Apply', root=self.vc.findViewByIdOrRaise('id/no_id/41')).touch()"
+    }
+  },
+  "15": {
+    "action_name": "i click 'Search' icon",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()"
+    }
+  },
+  "16": {
+    "action_name": "I click 'Search' icon",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()"
+    }
+  },
+  "17": {
+    "action_name": "I select 'Electronics' and i click 'Apply'",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewByIdOrRaise(\"com.abtnprojects.ambatana:id/cntCategoriesFilter\").touch()",
+      "1": "self.vc.findViewWithTextOrRaise(u'Electronics', root=self.vc.findViewByIdOrRaise('id/no_id/15')).touch()",
+      "2": "self.vc.findViewWithTextOrRaise(u'Apply', root=self.vc.findViewByIdOrRaise('id/no_id/41')).touch()"
+    }
+  },
+  "18": {
+    "action_name": "I click 'Electronics' to remove filtering",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'Electronics', root=self.vc.findViewByIdOrRaise('id/no_id/11')).touch()"
+    }
+  },
+  "19": {
+    "action_name": "I am in 'Feed' page",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Feed''').touch()"
+    }
+  },
+  "20": {
+    "action_name": "I click on 'See all'",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'See all').touch()"
+    }
+  },
+  "21": {
+    "action_name": "I click 'Navigate up' ",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.vc.findViewWithContentDescriptionOrRaise(u'''Navigate up''').touch()"
+    }
+  },
+  "22": {
+    "action_name": "I click on 'Edit'",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'Edit').touch()"
+    }
+  },
+  "23": {
+    "action_name": "I click on exit on editing",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.vc.findViewByIdOrRaise(\"id/no_id/2\").touch()"
+    }
+  },
+  "24": {
+    "action_name": "I click 'ELECTRONICS'",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'ELECTRONICS', root=self.vc.findViewByIdOrRaise('id/no_id/12')).touch()"
+    }
+  },
+  "25": {
+    "action_name": "I click 'Electronics' for unfilter our data",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'Electronics', root=self.vc.findViewByIdOrRaise('id/no_id/11')).touch()"
+    }
+  },
+  "26": {
+    "action_name": "I click 'ELECTRONICS'",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'ELECTRONICS', root=self.vc.findViewByIdOrRaise('id/no_id/12')).touch()"
+    }
+  },
+  "27": {
+    "action_name": "I click 'SPORTS AND OUTDOORS'",
+    "action_type": "When",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'SPORTS AND OUTDOORS', root=self.vc.findViewByIdOrRaise('id/no_id/14')).touch()"
+    }
+  },
+  "28": {
+    "action_name": "I click 'Sports and Outdoors'",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'Sports and Outdoors', root=self.vc.findViewByIdOrRaise('id/no_id/11')).touch()"
+    }
+  },
+  "29": {
+    "action_name": "I set text as 'asdadqwe'",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'Search letgo').setText(u\"asdadqwe\")"
+    }
+  },
+  "30": {
+    "action_name": "i write 'corap'",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'Search letgo').setText(u\"corap\")"
+    }
+  },
+  "31": {
+    "action_name": "I set text as 'ayakkabi'",
+    "action_type": "Given",
+    "codes": {
+      "0": "self.vc.findViewWithTextOrRaise(u'Search letgo').setText(u\"ayakkabi\")"
+    }
+  },
+  "32": {
+    "action_name": "I search for \"ayakkabi\" then i slide page down ",
+    "action_type": "When",
+    "codes": {
+      "0": "self.device.touchDip(376.19, 659.05, 0)",
+      "1": "self.device.dragDip((204.57, 537.14), (198.86, 160.76), 1000, 20, 0)"
+    }
+  },
+  "33": {
+    "action_name": "exit letgo",
+    "action_type": "Then",
+    "codes": {
+      "0": "self.device.touchDip(207.62, 710.48, 0)"
     }
   }
 }

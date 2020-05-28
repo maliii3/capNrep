@@ -1,15 +1,9 @@
-touching view with content-description=u'''My listings'''
-        self.vc.findViewWithContentDescriptionOrRaise(u'''My listings''').touch()
-
-touching view with content-description=u'''Chat'''
-        self.vc.findViewWithContentDescriptionOrRaise(u'''Chat''').touch()
-
 touching view with content-description=u'''Feed'''
         self.vc.findViewWithContentDescriptionOrRaise(u'''Feed''').touch()
 
-touching view with content-description=u'''307ccb8c-c29b-4227-ae9a-4cfbc4a1e247 cat.3'''
-        self.vc.findViewWithContentDescriptionOrRaise(u'''307ccb8c-c29b-4227-ae9a-4cfbc4a1e247 cat.3''').touch()
+touching view with content-description=u'''Search'''
+        self.vc.findViewWithContentDescriptionOrRaise(u'''Search''').touch()
 
-touching view with id=com.abtnprojects.ambatana:id/ivToolbarClose
-        self.vc.findViewByIdOrRaise("com.abtnprojects.ambatana:id/ivToolbarClose").touch()
+touching view with content-description=u'''Navigate up'''
+        self.vc.findViewWithContentDescriptionOrRaise(u'''Navigate up''').touch()
 

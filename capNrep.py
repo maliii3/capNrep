@@ -89,6 +89,7 @@ class CaptureAndReplay:
         self.event_handler = watchdog.events.FileSystemEventHandler()
         self.event_handler.on_modified = self.on_modified
         self.observer = Observer()
+        
         self.observer.schedule(self.event_handler, path="/Users/caner/Desktop/capNrep/", recursive=False) # mali
         self.observer.start()
         self.checkPopUpIsOpen = False
@@ -385,6 +386,7 @@ class CaptureAndReplay:
                 counter -= 1
                 quotesString = "'''"
                 quoteString = "'"
+                tirnakString ="\""
                 counterOfParametrizationIndex = 0
                 temp = copy.deepcopy(self.database[indexOnDb])
                 lenDbString = str(len(self.database))
@@ -400,12 +402,19 @@ class CaptureAndReplay:
                         codeDictionary[str(counter)] = codeDictionary[str(counter)].replace(parametrizedWord, text)
                         # for action name
                         actionDictionary = self.database[lenDbString]["action_name"]
-                        findFirstIndex = actionDictionary.find(quoteString,counterOfParametrizationIndex)
+                        findFirstIndex = actionDictionary.find(tirnakString,counterOfParametrizationIndex)
                         if findFirstIndex != -1:
-                            findSecondIndex = actionDictionary.find(quoteString,findFirstIndex+len(quoteString))
-                            parametrizedWord = actionDictionary[findFirstIndex + len(quoteString):findSecondIndex]
+                            findSecondIndex = actionDictionary.find(tirnakString,findFirstIndex+len(tirnakString))
+                            parametrizedWord = actionDictionary[findFirstIndex + len(tirnakString):findSecondIndex]
                             counterOfParametrizationIndex = findSecondIndex + 1 +len(text) - len(parametrizedWord) 
-                            self.database[lenDbString]["action_name"] = actionDictionary.replace("'" + parametrizedWord + "'", "'" + text + "'")                
+                            self.database[lenDbString]["action_name"] = actionDictionary.replace("\"" + parametrizedWord + "\"", "\"" + text + "\"")
+                        else:
+                            findFirstIndex = actionDictionary.find(quoteString,counterOfParametrizationIndex)
+                            if findFirstIndex != -1:
+                                findSecondIndex = actionDictionary.find(quoteString,findFirstIndex+len(quoteString))
+                                parametrizedWord = actionDictionary[findFirstIndex + len(quoteString):findSecondIndex]
+                                counterOfParametrizationIndex = findSecondIndex + 1 +len(text) - len(parametrizedWord) 
+                                self.database[lenDbString]["action_name"] = actionDictionary.replace("'" + parametrizedWord + "'", "'" + text + "'")               
                     counter -= 1
                 self.database[lenDbString] = temp    
                 tempList = []
@@ -846,6 +855,7 @@ class CaptureAndReplay:
                 return
             quotesString = "'''"
             quoteString = "'"
+            tirnakString = "\""
             oldLabelText = ""
             actionName = ""
             oldCodeText = ""
@@ -859,11 +869,18 @@ class CaptureAndReplay:
                 newActionName = actionName.replace("'''" + parametrizedWord + "'''" ,"'''" + entriesText[index].get() + "'''")
                 oldCodeText = oldCodeText.replace("'''" + parametrizedWord + "'''" ,"'''" + entriesText[index].get() + "'''")
             else:
-                findFirstIndex = actionName.find(quoteString)
-                findSecondIndex = actionName.find(quoteString,findFirstIndex+len(quoteString))
-                parametrizedWord = actionName[findFirstIndex + len(quoteString):findSecondIndex]
-                newActionName = actionName.replace("'" + parametrizedWord + "'" ,"'" + entriesText[index].get() + "'")
-                oldCodeText = oldCodeText.replace("'" + parametrizedWord + "'" ,"'" + entriesText[index].get() + "'")
+                findFirstIndex = actionName.find(tirnakString)
+                if findFirstIndex != -1:
+                    findSecondIndex = actionName.find(tirnakString,findFirstIndex+len(tirnakString))
+                    parametrizedWord = actionName[findFirstIndex + len(tirnakString):findSecondIndex]
+                    newActionName = actionName.replace("\"" + parametrizedWord + "\"" ,"\"" + entriesText[index].get() + "\"")
+                    oldCodeText = oldCodeText.replace("\"" + parametrizedWord + "\"" ,"\"" + entriesText[index].get() + "\"")
+                else:
+                    findFirstIndex = actionName.find(quoteString)
+                    findSecondIndex = actionName.find(quoteString,findFirstIndex+len(quoteString))
+                    parametrizedWord = actionName[findFirstIndex + len(quoteString):findSecondIndex]
+                    newActionName = actionName.replace("'" + parametrizedWord + "'" ,"'" + entriesText[index].get() + "'")
+                    oldCodeText = oldCodeText.replace("'" + parametrizedWord + "'" ,"'" + entriesText[index].get() + "'")
             self.currentEvents[index+ nonParametrizedWordCount + startingIndex][newActionName] = oldCodeText
             nonlocal builded
             if builded != False:
@@ -882,6 +899,7 @@ class CaptureAndReplay:
             for key in self.currentEvents[index].keys():
                 quotesString = "'''"
                 quoteString = "'"
+                tirnakString = "\""
                 LabelText = key
                 parametrizedWord = ""
                 findFirstIndex = LabelText.find(quotesString)
@@ -889,14 +907,19 @@ class CaptureAndReplay:
                     findSecondIndex = LabelText.find(quotesString,findFirstIndex+len(quotesString))
                     parametrizedWord = LabelText[findFirstIndex + len(quotesString):findSecondIndex]
                 else:
-                    findFirstIndex = LabelText.find(quoteString)
+                    findFirstIndex = LabelText.find(tirnakString)
                     if findFirstIndex != -1:
-                        findSecondIndex = LabelText.find(quoteString,findFirstIndex+len(quoteString))
-                        parametrizedWord = LabelText[findFirstIndex + len(quoteString):findSecondIndex]
+                        findSecondIndex = LabelText.find(tirnakString,findFirstIndex+len(tirnakString))
+                        parametrizedWord = LabelText[findFirstIndex + len(tirnakString):findSecondIndex]
                     else:
-                        print('Entered')
-                        nonParametrizedWordCount += 1
-                        continue
+                        findFirstIndex = LabelText.find(quoteString)
+                        if findFirstIndex != -1:
+                            findSecondIndex = LabelText.find(quoteString,findFirstIndex+len(quoteString))
+                            parametrizedWord = LabelText[findFirstIndex + len(quoteString):findSecondIndex]
+                        else:
+                            print('Entered')
+                            nonParametrizedWordCount += 1
+                            continue
                 print("index-nonParametrizedWordCount",index-nonParametrizedWordCount-startingIndex)
                 eventsLabel.append(Label(bddDialog, text=LabelText))
                 eventsLabel[index-nonParametrizedWordCount-startingIndex].pack(fill='x')
